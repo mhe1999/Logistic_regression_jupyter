@@ -17,17 +17,26 @@ def hyp(X, theta):
     h = sigomid(t)
     return h
 
-def cost_funtion(X, y, theta):
+def compute_cost(X, y, theta):
     m = X.shape[0]
     h = hyp(X, theta)
     loss = (-y * np.log(h) - (1-y) * np.log(1-h))
     cost = 1/m * np.sum(loss)
     return cost
 
+def cal_gradients(X, y, theta):
+    m = X.shape[0]
+    h = hyp(X, theta)
+    gradients = 1/m * np.dot(X.T, (h-y))
+    return gradients
+
 if __name__ == '__main__':
     all_data = load_data()
     X = all_data[0:1, :-1]
     y = all_data[0:1, -1]
+    m = X.shape[0]
+
+    X = np.append(np.zeros((m,1)) + 1, X, axis = 1)
     y = np.reshape(y, (-1,1))
     theta = np.zeros((X.shape[1]))
     theta = np.reshape(theta, (-1,1))
@@ -38,5 +47,6 @@ if __name__ == '__main__':
     # print("y:", y)
     # print("theta:", theta)
     # print(cost_funtion(X, y, theta).shape)
-    print(cost_funtion(X, y, theta))
+    # print(cost_funtion(X, y, theta))
     # print(data.shape[1])
+    print(cal_gradients(X, y, theta))
