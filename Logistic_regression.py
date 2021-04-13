@@ -97,67 +97,52 @@ def partition_data(dataset,train_percent = 0.8, test_percent = 0.2):
     # print(type(dataset))
     train_data = dataset[0:train_number, :]
     test_data = dataset[train_number:, :]
-
-
     return train_data, test_data
+
+def map_features(X, degree):
+    out = X
+    for i in range(X.shape[1]):
+        for j in range(i+1, X.shape[1]):
+            for k in range(degree+1):
+                # print(i,"^",k, j, "^", degree - k)
+                out = np.append(out, np.reshape(np.power(X[:,i], k) * np.power(X[:,j], degree - k), (-1,1)), axis = 1)
+    return out
+# out = np.append(X, np.reshape(X[:,0] * X[:,1], (-1,1)), axis = 1)
 
 if __name__ == '__main__':
     all_data = load_data()
     train_data , test_data = partition_data(all_data)
+    m = train_data.shape[0]
+
     X = train_data[:, :-1]
     Y = train_data[:, -1]
     X_test = test_data[:, :-1]
     Y_test = test_data[:, -1]
-    # print(X.shape)
-    m = X.shape[0]
-    n = X.shape[1]
-    X_norm, X_mu, X_sigma = feature_normalization(X)
-    # X_norm = np.append(np.zeros((m,1)) + 1, X_norm, axis = 1)
-
     Y = np.reshape(Y, (-1,1))
-    # theta = np.random.rand(X_norm.shape[1])
-    # theta = np.reshape(theta, (-1,1))
+    # X = np.reshape(X, (-1,1))
+    # X_test = np.reshape(X_test, (-1,1))
+
+
+    # X_norm, X_mu, X_sigma = feature_normalization(X)
+
+
+    X = map_features(X, 10)
+    X_test = map_features(X_test, 10)
+    print(X.shape)
+    n = X.shape[1]
     w, b = initialize_with_zeros(n)
-    # print("x:", X_norm)
-    # print("y:", y)
-    # print("w:",w)
-    # print("b:", b)
-    # theta = np.loadtxt('data.csv', delimiter=',')
-    # theta = np.reshape(theta, (-1,1))
-    # c,t = model(X_norm,y,theta, 1000, 1)
-    # np.savetxt('data.csv', t, delimiter=',')
-    # w, b, X, Y = np.array([[1.],[2.]]), 2., np.array([[1,3],[2,4], [-1,-3.2]]), np.array([[1],[0],[1]])
-    # print(X.shape)
-    # print(w.shape)
-    cost_save, w, b, dw, db = model(X_norm, Y, w, b, 100, 90)
-    # print(predict(X,w,b, X_mu, X_sigma))
-    # cost = compute_cost(X,Y, w, b)
-    # dw, db = cal_gradients(X, Y, w, b)
-    # print("w", w)
-    # print("b", b)
-    # print("dw", dw)
-    # print("db", db)
-    # print("cost:", cost)
-    # print(t)
-    # red = np.where(all_data[:, -1]==1)
-    # blue = np.where(all_data[:, -1]==0)
-    # print(red)
-    # print('\n\n\n')
-    # plt.plot(X[red], 'ro')
-    # plt.plot(X[blue], 'bo')
-    # plt.plot(X,y, 'bo')
 
+    X_norm, X_mu, X_sigma = feature_normalization(X)
+    cost_save, w, b, dw, db = model(X_norm, Y, w, b, 5000, 0.8)
+
+    Y_prediction_test = predict(X_test, w, b, X_mu, X_sigma)
+    Y_prediction_train = predict(X, w, b, X_mu, X_sigma)
+    print("train accuracy: {} %".format(100 - np.mean(np.abs(Y_prediction_train - Y)) * 100))
+    print("test accuracy: {} %".format(100 - np.mean(np.abs(Y_prediction_test - Y_test)) * 100))
+    print("cost:", cost_save[-1])
+    print(X.shape)
+
+    # plt.plot(X, Y, 'o')
     # plt.show()
-    # yhat = predict(X[0:1,0:-1], theta, X_mu, X_sigma)
-    # print(yhat)
-
-
-    # print(X.shape)
-    # print(y.shape)
-    # print(theta.shape)
-    # print("x:", X)
-    # print("y:", y)
-    # print("theta:", theta)
-    # print(cost_funtion(X, y, theta).shape)
-    # print(cost_funtion(X, y, theta))
-    # print(data.shape[1])
+    plt.plot(cost_save)
+    plt.show()
